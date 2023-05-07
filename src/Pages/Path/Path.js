@@ -1,12 +1,28 @@
-import React, { useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import Map from "./Map";
 import Header from "../Home/Header";
 
 function Path() {
+  const [list, setList] = useState([]);
+
   useEffect(() => {
     Map();
   }, []);
+
+  useEffect(()=> {
+    const requestOptions = {
+      method: 'GET',
+      redirect: 'follow'
+    };
+  
+    fetch("https://2a9908a5-f393-436e-86ea-49797d7a1d1f.mock.pstmn.io/api/paths?departure&arrival", requestOptions)
+    .then(response => response.json())
+    .then(result => setList(result))
+    .catch(error => console.log('error :: ', error))  
+  }, [])
+
+  console.log(list);
 
   return (
     <>
@@ -43,51 +59,42 @@ function Path() {
               <option value="최소 시간순">최소 시간순</option>
               <option value="최적 경로순">최적 경로순</option>
             </Select>
-            <Bus $top>
-              <H3>16분</H3>
-              <Content>
-                <Flex>
-                  <H4>도보</H4>
-                  <P>(6분)</P>
-                </Flex>
-                <Flex>
-                  <H4>191</H4>
-                  <P>(10분)</P>
-                </Flex>
-                <P $direction>구미역(금오공대 방면)</P>
-                <Time>
-                  9분
-                </Time>
-                <Time>
-                  17분
-                </Time>
-                <Flex>
-                  <H4>하차</H4>
-                  <P>금오공대 종점</P>
-                </Flex>
-              </Content>
-            </Bus>
-            <Bus>
-              <H3>30분</H3>
-              <Content>
-                <Flex>
-                  <H4>도보</H4>
-                  <P>(11분)</P>
-                </Flex>
-                <Flex>
-                  <H4>199</H4>
-                  <P>(19분)</P>
-                </Flex>
-                <P $direction>구미역(금오공대 방면)</P>
-                <Time>
-                  5분
-                </Time>
-                <Flex>
-                  <H4>하차</H4>
-                  <P>금오공대 종점</P>
-                </Flex>
-              </Content>
-            </Bus>
+            <PathList>
+              {list && list.map((items) => 
+                <PathContent>
+                  <H3>{items.duration}분</H3>
+                  {items.stepList.map((item) =>
+                    <Content>
+                      <Flex>
+                        <H4>{item.type}</H4>
+                        <P>({item.duration}분)</P>
+                        {/* 버스 하나를 몇 분동안 타는 지 */}
+                      </Flex>
+                      <Flex>
+                        <H4>승차</H4>
+                        <P>{item.departure}</P>
+                      </Flex>
+                      {item.arrivalRouteList.map((it) => 
+                        <>
+                          <Flex>
+                            <H4>{it.routeNo}</H4>
+                            <P $direction>{it.departureName}</P>
+                          </Flex>
+                          <Time>
+                            {it.arrTime}분
+                          </Time>
+                        </>
+                      )}
+                      <Flex>
+                        <H4>하차</H4>
+                        <P>{item.arrival}</P> 
+                        {/* 하차 지점 */}
+                      </Flex>
+                    </Content>
+                  )}
+                </PathContent>
+              )}
+            </PathList> 
           </Div>
         </Flex>
       </Container>
@@ -132,13 +139,23 @@ const Input = styled.input`
   border-radius: 50px;
 `
 
-const Bus = styled.div`
+const PathList = styled.div`
+  &::-webkit-scrollbar {
+    display: none;
+  }
+
+  width: 100%;
+  height: 58vh;
+  padding-bottom: 20px;
+  overflow: scroll;
+`
+const PathContent = styled.div`
   display: inline-block;
   width: 100%;
   height: auto;
   padding-bottom: 20px;
   border-bottom: 1px solid #54734636;
-  border-top: ${prop => prop.$top? "1px solid #54734636" : "0px"};
+  border-top: 1px solid #54734636;
 `
 
 const Mymap = styled.div`
@@ -170,12 +187,12 @@ const H4 = styled.h4`
 const P = styled.p`
   padding: 0px;
   margin: 5px 10px;
-  margin-left: ${prop => prop.$direction? "60px" : "10px"};
 `
 
 const Time = styled(P)`
   color: red;
   font-weight: 700;
+  margin-left: 65px;
 `
 
 const Flex = styled.div`

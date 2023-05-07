@@ -1,39 +1,46 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import Header from '../Home/Header.js';
 
-function Modal() {
+function Modal({value}) {
+  const [list, setList] = useState([]);
+  const onCancel = () => {
+    window.location.href = "/arrival"
+  }
+
+  useEffect(()=> {
+    const requestOptions = {
+      method: 'GET',
+      redirect: 'follow'
+    };
+  
+    fetch("https://2a9908a5-f393-436e-86ea-49797d7a1d1f.mock.pstmn.io/api/nodes/search", requestOptions)
+    .then(response => response.json())
+    .then(result => setList(result))
+    .catch(error => console.log('error :: ', error))  
+  }, [])
+
+  // console.log(list);
+  console.log(value);
+
   return (
     <Div>
       <Header />
       <Container>
         <H2>
-          "1" 의 검색 결과
+          "옥계중" 의 검색 결과
         </H2>
         <Fieldset>
-          <Label>
-            <Input type="radio" name="option"/>
-            <span>11 구미역 → 왜관남부</span>
-          </Label>
-
-          <Label>
-            <Input type="radio" name="option"/>
-            <span>11 왜관남부 → 구미역</span>
-          </Label>
-
-          <Label>
-            <Input type="radio" name="option"/>
-            <span>110 구미역 → 아사히글라스</span>
-          </Label>
-
-          <Label>
-            <Input type="radio" name="option"/>
-            <span>110 아사히글라스 → 구미역</span>
-          </Label>
+          {list && list.map((item) => 
+            <Label>
+              <Input type="radio" name="option"/>
+              <span>{item.name}</span>
+            </Label>
+          )}
         </Fieldset>
         <Flex>
           <Btn $primary>확인</Btn>
-          <Btn>취소</Btn>
+          <Btn onClick={onCancel}>취소</Btn>
         </Flex>
       </Container>
     </Div>
@@ -47,9 +54,7 @@ const Div = styled.div`
 `
 
 const Container = styled.div`
-  overflow: scroll;
-  width: 460px;
-  height: 400px;
+  width: 450px;
   border-radius: 25px;
   color: #547346;
   margin: auto;
@@ -58,11 +63,13 @@ const Container = styled.div`
 `
 
 const Fieldset = styled.fieldset`
+  &::-webkit-scrollbar {
+    display: none;
+  }
+
   border: 0px;
-  margin-right: 10px;           
-  /* #test::-webkit-scrollbar-thumb {
-    background-color: black; // 스크롤바의 색상
-  } */
+  height: 315px;
+  overflow: scroll;
 `
 
 const Label = styled.label`
@@ -96,6 +103,7 @@ const Btn = styled.button`
 const Input = styled.input.attrs({ type: 'radio' })`
   &:checked {
     border: 0.4em solid #547346;
+    color: #547346;
   }
 
   &:focus-visible {

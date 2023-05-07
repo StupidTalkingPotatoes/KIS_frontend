@@ -1,30 +1,58 @@
-import React, { useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
-import Map from "./Map.js";
 import Header from '../Home/Header.js';
+import Modal from './Modal.js';
+import Map from "./Map.js";
 import bus from '../../Images/bus.png';
 
 function Location() {
+  const [value, setValue] = useState("");
+  const [list, setList] = useState([]);
+
+  const saveValue = (event) => {
+    setValue(event.target.value);
+  }
+
+  const onSearch = () => {
+    <Modal value={value} />
+    window.location.href = "/locationmodal"
+  }
+
   useEffect(() => {
     Map();
   }, []);
+
+  useEffect(()=> {
+    const requestOptions = {
+      method: 'GET',
+      redirect: 'follow'
+    };
+  
+    fetch("https://2a9908a5-f393-436e-86ea-49797d7a1d1f.mock.pstmn.io/api/routes/location?id=", requestOptions)
+    .then(response => response.json())
+    .then(result => setList(result))
+    .catch(error => console.log('error :: ', error))  
+  }, [])
+
+  console.log(list);
 
   return (
     <>
       <Header />
       <Container>
         <Search>
-          <Input type="text" placeholder="버스 번호를 검색하세요." />
+          <Input
+            type="text"
+            placeholder="버스 번호를 검색하세요."
+            value={value}
+            onChange={saveValue}
+          />
           <span class="material-symbols-outlined"
-            style={{
-              position: "absolute",
-              right: "40px",
-              top: "20px",
-              fontWeight: "600",
-              color: "#53B332",
-              cursor: "pointer"
+            style={{ position: "absolute", right: "40px", top: "20px",
+              fontWeight: "600", color: "#53B332", cursor: "pointer"
             }}
-            >search</span>
+            onClick={onSearch}
+          >search</span>
         </Search>
         <Flex>
           <Mymap id='myMap'></Mymap>
@@ -32,21 +60,16 @@ function Location() {
             <Bus>
               <Flex>
                 <Img src={bus} />
-                <H3>191번</H3>
+                <H3>{list.routeNo}번</H3>
                 <P>구미역 방면</P>
               </Flex>
             </Bus>
             <Node>
               <Current>●</Current>
               <Line></Line>
-              <NodeItem>구미역</NodeItem>
-              <NodeItem>농협</NodeItem>
-              <NodeItem>금오산사거리</NodeItem>
-              <NodeItem>푸르지오캐슬B단지</NodeItem>
-              <NodeItem>가톨릭근로자문화센타</NodeItem>
-              <NodeItem>형곡금호어울림앞</NodeItem>
-              <NodeItem>형곡네거리</NodeItem>
-              <NodeItem>형곡두거리</NodeItem>
+              {list.passingNodeList && list.passingNodeList.map((item) =>
+                <NodeItem>{item.name}</NodeItem>
+              )}
             </Node>
           </Div>
         </Flex>
@@ -118,24 +141,30 @@ const Flex = styled.div`
 const Div = styled.div`
   width: 19%;
   height: 72.8vh;
-  overflow: hidden;
 `
 
 const Node = styled.div`
+  &::-webkit-scrollbar {
+    display: none;
+  }
+
   position: relative;
+  height: 65.3vh;
+  overflow: scroll;
 `
 
 const NodeItem = styled.p`
-  font-size: 20px;
-  padding: 8px 0px 28px 40px;
-  margin-left: 50px;
+  font-size: 19px;
+  padding: 25px 0px 28px 30px;
+  margin: 0px 0px 0px 45px; 
+  /* margin-left: 50px; */
   border-bottom: 1px solid #54734636;
 `
 
 const Current = styled.h2`
   position: absolute;
-  top: 5px;
-  left: 40px;
+  top: 20px;
+  left: 35px;
   margin: 0px;
   color: #53B332;
   text-shadow: -4px 0px #fff, 0px 4px #fff, 4px 0px #fff, 0px -4px #fff, 0 0 14px #000;
@@ -146,9 +175,9 @@ const Current = styled.h2`
 const Line = styled.div`
   position: absolute;
   border-left : 3px solid #547346;
-  height : 800px;
+  height : 575%;
   top: 0px;
-  left: 50px;
+  left: 45px;
   margin: 0px;
   padding: 0px;
   color: #547346;

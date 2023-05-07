@@ -1,36 +1,47 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import Header from '../Home/Header.js';
 
 function Modal() {
+  const [list, setList] = useState([]);
+  const onCancel = () => {
+    window.location.href = "/arrival"
+  }
+
+  useEffect(()=> {
+    const requestOptions = {
+      method: 'GET',
+      redirect: 'follow'
+    };
+  
+    fetch("https://2a9908a5-f393-436e-86ea-49797d7a1d1f.mock.pstmn.io/api/routes/search?no=195", requestOptions)
+    .then(response => response.json())
+    .then(result => setList(result))
+    .catch(error => console.log('error :: ', error))  
+  }, [])
+
+  console.log(list);
+
   return (
     <Div>
       <Header />
-      <Container>
-        <H2>
-          "금오공대" 의 검색 결과
-        </H2>
-        <Fieldset>
-          <Label>
-            <Input type="radio" name="option"/>
-            <span>금오공대 종점</span>
-          </Label>
-
-          <Label>
-            <Input type="radio" name="option"/>
-            <span>금오공대 입구 (옥계중학교 방면)</span>
-          </Label>
-
-          <Label>
-            <Input type="radio" name="option"/>
-            <span>금오공대 입구 (구미역 방면)</span>
-          </Label>
-        </Fieldset>
-        <Flex>
-          <Btn $primary>확인</Btn>
-          <Btn>취소</Btn>
-        </Flex>
-      </Container>
+        <Container>
+          <H2>
+            "{list.routeNo}" 의 검색 결과
+          </H2>
+          <Fieldset>
+            {list.routeList && list.routeList.map((item) => 
+              <Label>
+                <Input type="radio" name="option"/>
+                <span>{list.routeNo}ㅤ{item.startNode} → {item.endNode}</span>
+              </Label>
+            )}
+          </Fieldset>
+          <Flex>
+            <Btn $primary>확인</Btn>
+            <Btn onClick={onCancel}>취소</Btn>
+          </Flex>
+        </Container>
     </Div>
   )
 }
@@ -51,7 +62,12 @@ const Container = styled.div`
 `
 
 const Fieldset = styled.fieldset`
-  border: 0px;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+
+  border: 0px;  
+  height: 315px;
   overflow: scroll;
 `
 
@@ -86,7 +102,6 @@ const Btn = styled.button`
 const Input = styled.input.attrs({ type: 'radio' })`
   &:checked {
     border: 0.4em solid #547346;
-    color: #547346;
   }
 
   &:focus-visible {

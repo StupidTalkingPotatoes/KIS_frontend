@@ -1,13 +1,41 @@
-import React, { useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
-import Map from "./Map";
 import Header from '../Home/Header.js';
+import Modal from './Modal.js';
+import Map from "./Map";
 import bus from '../../Images/bus.png';
 
 function Arrival() {
+  const [value, setValue] = useState("");
+  const [list, setList] = useState([]);
+  
+  const saveValue = (event) => {
+    setValue(event.target.value);
+  }
+
+  const onSearch = () => {
+    <Modal value={value} />
+    window.location.href = "/arrivalmodal"
+  }
+
+  // console.log(list);
+  // console.log(value);
+
   useEffect(() => {
     Map();
   }, []);
+
+  useEffect(()=> {
+    const requestOptions = {
+      method: 'GET',
+      redirect: 'follow'
+    };
+  
+    fetch("https://2a9908a5-f393-436e-86ea-49797d7a1d1f.mock.pstmn.io/api/nodes/arrive-info?id=GMB131", requestOptions)
+    .then(response => response.json())
+    .then(result => setList(result))
+    .catch(error => console.log('error :: ', error))  
+  }, [])
 
   return (
     <>
@@ -18,60 +46,36 @@ function Arrival() {
             <option value="정류장 번호">정류장 번호</option>
             <option value="정류장명">정류장명</option>
           </Select>
-          <Input type="text" placeholder="정류장 번호를 검색하세요." />
+          <Input
+            type="text"
+            placeholder="정류장 번호를 검색하세요."
+            value={value}
+            onChange={saveValue}
+          />
           <span class="material-symbols-outlined"
-            style={{
-              position: "absolute",
-              right: "40px",
-              top: "20px",
-              fontWeight: "600",
-              color: "#53B332",
-              cursor: "pointer"
-            }}
-            >search</span>
+            style={{ position: "absolute", right: "40px", top: "20px",
+              fontWeight: "600", color: "#53B332", cursor: "pointer" }}
+            onClick={onSearch}
+          >search</span>
         </Search>
         <Flex>
           <Mymap id='myMap'></Mymap>
           <Bus>
-            <Section2 $top>
-              <Flex>
-                <Img src={bus} />
-                <Div>
-                  <H2>191번</H2>
-                  <P>구미역 방면</P>
-                  <Flex>
-                    <Time>1분</Time>
-                    <P>2번째 전</P>
-                  </Flex>
-                </Div>
-              </Flex>
-            </Section2>
-            <Section>
-              <Flex>
-                <Img src={bus}/>
-                <Div>
-                  <H2>198번</H2>
-                  <P>구미역 방면</P>
-                  <Flex>
-                    <Time>7분</Time>
-                    <P>6번째 전</P>
-                  </Flex>
-                </Div>
-              </Flex>
-            </Section>
-            <Section2>
-              <Flex>
-                <Img src={bus}/>
-                <Div>
-                  <H2>199번</H2>
-                  <P>구미역 방면</P>
-                  <Flex>
-                    <Time>13분</Time>
-                    <P>10번째 전</P>
-                  </Flex>
-                </Div>
-              </Flex>
-            </Section2>
+            {list.arrivalRouteList && list.arrivalRouteList.map((item) => 
+              <Section2>
+                <Flex>
+                  <Img src={bus} />
+                  <Div>
+                    <H2>{item.routeNo}번</H2>
+                    <P>{item.departureName} 방면</P>
+                    <Flex>
+                      <Time>{item.arrTime}분</Time>
+                      <P>{item.prevNodeCnt}번째 전</P>
+                    </Flex>
+                  </Div>
+                </Flex>
+              </Section2>
+            )}
           </Bus>
         </Flex>
       </Container>
@@ -110,8 +114,7 @@ const Select = styled.select`
 
 const Section = styled.div`
   width: 100%;
-  height: 20vh;
-  margin: ${props => props.$top ? "30px 0px 0px 0px" : "0px"};
+  height: 19.52vh;
   padding: 20px;
   color: #547346;
   vertical-align: middle;
@@ -136,6 +139,7 @@ const Bus = styled.div`
   display: block;
   width: 20%;
   height: 72.8vh;
+  margin-top: 30px;
   overflow: hidden;
 `
 
@@ -148,7 +152,7 @@ const Mymap = styled.div`
 const Img = styled.img`
   width: 110px;
   height: 110px;
-  padding: 45px 20px 40px 50px;
+  padding: 45px 20px 40px 40px;
 `
 
 const H2 = styled.h2`
