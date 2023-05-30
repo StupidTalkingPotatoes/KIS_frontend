@@ -1,47 +1,61 @@
-const { kakao } = window;
+import React, { useEffect, useState } from 'react';
+import Mark from '../../Images/mark.png';
+import Current from '../../Images/current.png';
 
-function Map() {
-  const container = document.getElementById('myMap');
-  const options = {
-    center: new kakao.maps.LatLng(36.14123, 128.39590),
-    level: 3
-  };
+const Map = () => {
+  const { naver } = window;
+  const [list, setList] = useState([]);
 
-  // 지도를 생성합니다
-  const map = new kakao.maps.Map(container, options);
-  
-  // var imageSrc = "../../Images/white.png"; // 마커이미지의 주소입니다    
-  // var imageSize = new kakao.maps.Size(64, 69); // 마커이미지의 크기입니다
-  // var imageOption = {offset: new kakao.maps.Point(27, 69)}; // 마커이미지의 옵션입니다. 마커의 좌표와 일치시킬 이미지 안에서의 좌표를 설정합니다.
-        
-  // 마커의 이미지정보를 가지고 있는 마커이미지를 생성합니다
-  // var markerImage = new kakao.maps.MarkerImage(imageSrc, imageSize, imageOption)
-
-  // 마커가 표시될 위치입니다
-  var markerPosition  = new kakao.maps.LatLng(36.14256247287736, 128.39459855613836); 
-  var markerPosition2  = new kakao.maps.LatLng(36.13949615267772, 128.39674396438699); 
-  var markerPosition3  = new kakao.maps.LatLng(36.139311817617845, 128.39709620049); 
-
-  // 마커를 생성합니다
-  var marker = new kakao.maps.Marker({
-    position: markerPosition, 
-    // image: markerImage // 마커이미지 설정 
-  });
-
-  var marker2 = new kakao.maps.Marker({
-    position: markerPosition2, 
-    // image: markerImage // 마커이미지 설정 
+  useEffect(() => {
+    const current = new naver.maps.LatLng(36.14567, 128.39261); 
+    const map = new naver.maps.Map('map', {
+      center: current, // 중앙에 배치할 위치
+      zoom: 16, // 확대 단계
     });
+
+    const currentMarker = new naver.maps.Marker({
+      map,
+      position: current,
+      icon: {
+        url: Current,
+        origin: new naver.maps.Point(0, 0),
+        anchor: new naver.maps.Point(25, 26)
+      }
+    })
   
-  var marker3 = new kakao.maps.Marker({
-    position: markerPosition3, 
-    // image: markerImage // 마커이미지 설정 
+    // eslint-disable-next-line no-lone-blocks
+    {list && list.map((item) => {
+      const marker = new naver.maps.Marker({
+        map,
+        position: new naver.maps.LatLng(item.latitude, item.longitude),
+        icon: {
+          url: Mark,
+          origin: new naver.maps.Point(0, 0),
+          anchor: new naver.maps.Point(25, 26)
+        }
+      })
+    })}
   });
 
-  // 마커가 지도 위에 표시되도록 설정합니다
-  marker.setMap(map);
-  marker2.setMap(map);
-  marker3.setMap(map);
-}
+  useEffect(()=> {
+    const requestOptions = {
+      method: 'GET',
+      redirect: 'follow'
+    };
+  
+    fetch("http://119.56.230.204:506/api/nodes?latitude=36.14567&longitude=128.39261", requestOptions)
+    .then(response => response.json())
+    .then(result => setList(result))
+    .catch(error => console.log('error :: ', error))  
+  }, [])
 
+  // console.log(list);
+
+  return (
+    <div>
+      <div id="map" style={{ width: '100vw', height: '57vh' }}></div>
+    </div>
+  );
+};
+ 
 export default Map;

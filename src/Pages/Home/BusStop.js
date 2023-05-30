@@ -1,14 +1,10 @@
-import React, { useEffect } from 'react';
-import Map from "./Map";
+import React from 'react';
+import Map from './Map';
 import styled from 'styled-components';
 import Notice from './Notice.js';
 import bus from '../../Images/bus.png';
 
 function BusStop() {
-  useEffect(() => {
-    Map();
-  }, []);
-
   return (
     <Container>
       <Search>
@@ -21,20 +17,22 @@ function BusStop() {
         </span>
         <Input type='text' value="경상북도 구미시 대학로 61" disabled/>
       </Search>
-      <Mymap id='myMap'></Mymap>
+      <Mymap>
+        <Map />
+      </Mymap>
       <Div>
         <Anchor>
-          <Section>
+          <Section href="/arrival">
             <Img src={bus} />
             <H3>실시간 도착 정보</H3>
             <P>저상버스의 실시간 도착 정보를 알려드립니다.</P>
           </Section>
-          <Section2>
+          <Section2 href="/location">
             <Img src={bus}/>
             <H3>실시간 위치 정보</H3>
             <P>저상버스의 실시간 위치 정보를 알려드립니다.</P>
           </Section2>
-          <Section>
+          <Section href="/path">
             <span class="material-symbols-outlined"
               style={{
                 color: "#53B332",
@@ -74,7 +72,7 @@ const Input = styled.input`
 
 const Search = styled.div`
   display: flex;
-  margin: 20px 20px 40px 20px;
+  margin: 20px 20px 30px 20px;
   padding: 10px;
   align-items: center;
   justify-content: center;
@@ -83,16 +81,17 @@ const Search = styled.div`
 const Mymap = styled.div`
   width: 100%;
   height: 50vh;
-  margin-bottom: 35px;
+  margin-bottom: 95px;
 `
 
 const Anchor = styled.div`
   width: 55%;
 `
 
-const Section = styled.div`
+const Section = styled.a`
   display: inline-block;
   vertical-align: middle;
+  text-decoration: none;
   width: 27.5%;
   height: 180px;
   padding: 20px;
