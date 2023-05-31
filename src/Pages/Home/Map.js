@@ -46,6 +46,18 @@ const Map = () => {
           anchor: new naver.maps.Point(25, 26)
         }
       })
+
+      var infowindow = new naver.maps.InfoWindow({
+        content: [`<p style="position: relative; top: 95px; left: -10px; color: #53B332; font-size: 12px; text-align:center; background-color: white; font-weight: 900; padding: 10px; border-radius: 5px; border: 3px solid #53B332"> ${item.name} </p>`].join(''),
+        borderWidth: 0,
+        backgroundColor: "transparent",
+        disableAnchor: true
+      });
+
+      naver.maps.Event.addListener(marker, "click", function(e) {
+        if (infowindow.getMap()) { infowindow.close(); }
+        else { infowindow.open(map, marker); }
+      });
     })}
   });
 
