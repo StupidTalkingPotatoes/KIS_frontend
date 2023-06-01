@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
+import { useParams, Link } from "react-router-dom";
 import styled from 'styled-components';
 import Header from '../Home/Header.js';
 
-function Modal({value}) {
+function Modal() {
+  let { search } = useParams();
   const [list, setList] = useState([]);
-  const onCancel = () => {
-    window.location.href = "/arrival"
-  }
+  const [id, setId] = useState();
+
+  const onSelect = (id) => { setId(id) }
 
   useEffect(()=> {
     const requestOptions = {
@@ -14,33 +16,37 @@ function Modal({value}) {
       redirect: 'follow'
     };
   
-    fetch("https://2a9908a5-f393-436e-86ea-49797d7a1d1f.mock.pstmn.io/api/nodes/search", requestOptions)
-    .then(response => response.json())
-    .then(result => setList(result))
-    .catch(error => console.log('error :: ', error))  
+    fetch(`http://119.56.230.204:506/api/nodes/search?no=${search}`, requestOptions)
+      .then(response => response.json())
+      .then(result => setList(result))
+      .catch(error => console.log('error :: ', error))
   }, [])
 
-  // console.log(list);
-  console.log(value);
-
+  console.log("list :: ", list);
+  // console.log("id :: ", id);
+  
   return (
     <Div>
       <Header />
       <Container>
         <H2>
-          "옥계중" 의 검색 결과
+          "{search}" 의 검색 결과
         </H2>
         <Fieldset>
           {list && list.map((item) => 
             <Label>
-              <Input type="radio" name="option"/>
+              <Input type="radio" name="option" onChange={() => onSelect(item.id)}/>
               <span>{item.name}</span>
             </Label>
           )}
         </Fieldset>
         <Flex>
-          <Btn $primary>확인</Btn>
-          <Btn onClick={onCancel}>취소</Btn>
+          <Link to="/arrival" state={{ id: id }} style={{ margin: "auto" }}>
+            <Btn $primary>확인</Btn>
+          </Link>
+          <Link to="/arrival" style={{ margin: "auto" }}>
+            <Btn>취소</Btn>
+          </Link>
         </Flex>
       </Container>
     </Div>

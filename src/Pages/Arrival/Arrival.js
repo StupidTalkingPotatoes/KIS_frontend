@@ -1,37 +1,25 @@
 import React, { useState, useEffect } from 'react';
+import { Link, useLocation } from "react-router-dom";
 import styled from 'styled-components';
 import Header from '../Home/Header.js';
-import Modal from './Modal.js';
 import Map from "./Map";
 import bus from '../../Images/bus.png';
 
 function Arrival() {
   const [value, setValue] = useState("");
-  const [list, setList] = useState([]);
-  
-  const saveValue = (event) => {
-    setValue(event.target.value);
-  }
+  const [list, setList] = useState({});
 
-  const onSearch = () => {
-    <Modal value={value} />
-    window.location.href = "/arrivalmodal"
-  }
-
-  // console.log(list);
-  // console.log(value);
+  const location = useLocation(); 
+  const id = location.state?.id; 
+  const saveValue = (e) => { setValue(e.target.value); }
 
   useEffect(() => {
-    Map();
-  }, []);
-
-  useEffect(()=> {
     const requestOptions = {
       method: 'GET',
       redirect: 'follow'
     };
-  
-    fetch("https://2a9908a5-f393-436e-86ea-49797d7a1d1f.mock.pstmn.io/api/nodes/arrive-info?id=GMB131", requestOptions)
+
+    fetch(`http://119.56.230.204:506/api/nodes/arrive-info?id=${id}`, requestOptions)
     .then(response => response.json())
     .then(result => setList(result))
     .catch(error => console.log('error :: ', error))  
@@ -43,8 +31,8 @@ function Arrival() {
       <Container>
         <Search>
           <Select>
-            <option value="정류장 번호">정류장 번호</option>
-            <option value="정류장명">정류장명</option>
+            <option value="정류장번호">정류장 번호</option>
+            <option value="정류장명">정류장 명</option>
           </Select>
           <Input
             type="text"
@@ -52,32 +40,37 @@ function Arrival() {
             value={value}
             onChange={saveValue}
           />
-          <span class="material-symbols-outlined"
-            style={{ position: "absolute", right: "40px", top: "20px",
-              fontWeight: "600", color: "#53B332", cursor: "pointer" }}
-            onClick={onSearch}
-          >search</span>
+          <Link to={`/arrival/${value}`}>
+            <span class="material-symbols-outlined"
+              style={{ position: "absolute", right: "40px", top: "20px",
+                fontWeight: "600", color: "#53B332", cursor: "pointer" }}
+            >search</span>
+          </Link>
         </Search>
-        <Flex>
-          <Mymap id='myMap'></Mymap>
-          <Bus>
-            {list.arrivalRouteList && list.arrivalRouteList.map((item) => 
-              <Section2>
-                <Flex>
-                  <Img src={bus} />
-                  <Div>
-                    <H2>{item.routeNo}번</H2>
-                    <P>{item.departureName} 방면</P>
-                    <Flex>
-                      <Time>{item.arrTime}분</Time>
-                      <P>{item.prevNodeCnt}번째 전</P>
-                    </Flex>
-                  </Div>
-                </Flex>
-              </Section2>
-            )}
-          </Bus>
-        </Flex>
+        {id !== undefined &&
+          <Flex>
+            <Mymap>
+              <Map id= {id} />
+            </Mymap>
+            <Bus>
+              {list.arrivalRouteList && list.arrivalRouteList.map((item) => 
+                <Section2>
+                  <Flex>
+                    <Img src={bus} />
+                    <Div>
+                      <H2>{item.routeNo}번</H2>
+                      <P>{item.departureName} 방면</P>
+                      <Flex>
+                        <Time>{item.arrTime}분</Time>
+                        <P>{item.prevNodeCnt}번째 전</P>
+                      </Flex>
+                    </Div>
+                  </Flex>
+                </Section2>
+              )}
+            </Bus>
+          </Flex>
+        }
       </Container>
     </>
   )

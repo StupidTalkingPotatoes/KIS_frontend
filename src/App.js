@@ -15,8 +15,8 @@ function App() {
         <Route path="/arrival" element={<Arrival />}></Route>
         <Route path="/location" element={<Location />}></Route>
         <Route path="/path" element={<Path />}></Route>
-        <Route path="/arrivalmodal" element={<ArrivalModal />}></Route>
-        <Route path="/locationmodal" element={<LocationModal />}></Route>
+        <Route path="/arrival/:search" element={<ArrivalModal />}></Route>
+        <Route path="/location/:routeNo" element={<LocationModal />}></Route>
       </Routes>
     </BrowserRouter>
   );
