@@ -7,11 +7,13 @@ import bus from '../../Images/bus.png';
 
 function Arrival() {
   const [value, setValue] = useState("");
+  const [selected, setSelected] = useState("정류장번호");
   const [list, setList] = useState({});
 
   const location = useLocation(); 
   const id = location.state?.id; 
   const saveValue = (e) => { setValue(e.target.value); }
+  const onSelect = (e) => { setSelected(e.target.value); }
 
   useEffect(() => {
     const requestOptions = {
@@ -25,22 +27,33 @@ function Arrival() {
     .catch(error => console.log('error :: ', error))  
   }, [])
 
+  // console.log(list);
+
   return (
     <>
       <Header />
       <Container>
         <Search>
-          <Select>
+          <Select onChange={onSelect}>
             <option value="정류장번호">정류장 번호</option>
-            <option value="정류장명">정류장 명</option>
+            <option value="정류장명">정류장명</option>
           </Select>
-          <Input
-            type="text"
-            placeholder="정류장 번호를 검색하세요."
-            value={value}
-            onChange={saveValue}
-          />
-          <Link to={`/arrival/${value}`}>
+          {selected == "정류장번호" ? (
+            <Input
+              type="text"
+              placeholder="정류장 번호를 검색하세요."
+              value={value}
+              onChange={saveValue}
+            />
+            ) : (
+            <Input
+              type="text"
+              placeholder="정류장명을 검색하세요."
+              value={value}
+              onChange={saveValue}
+            />
+          )}
+          <Link to={`/arrival/${value}`} state={{ selected: selected }}>
             <span class="material-symbols-outlined"
               style={{ position: "absolute", right: "40px", top: "20px",
                 fontWeight: "600", color: "#53B332", cursor: "pointer" }}

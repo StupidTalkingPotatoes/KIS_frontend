@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useLocation } from "react-router-dom";
 import styled from 'styled-components';
 import Header from '../Home/Header.js';
 
 function Modal() {
   let { search } = useParams();
+  const location = useLocation(); 
+  const selected = location.state?.selected;
   const [list, setList] = useState([]);
   const [id, setId] = useState();
 
@@ -16,10 +18,17 @@ function Modal() {
       redirect: 'follow'
     };
   
-    fetch(`http://119.56.230.204:506/api/nodes/search?no=${search}`, requestOptions)
-      .then(response => response.json())
-      .then(result => setList(result))
-      .catch(error => console.log('error :: ', error))
+    selected == "정류장번호" ? (
+      fetch(`http://119.56.230.204:506/api/nodes/search?no=${search}`, requestOptions)
+        .then(response => response.json())
+        .then(result => setList(result))
+        .catch(error => console.log('error :: ', error))
+    ) : (
+      fetch(`http://119.56.230.204:506/api/nodes/search?name=${search}`, requestOptions)
+        .then(response => response.json())
+        .then(result => setList(result))
+        .catch(error => console.log('error :: ', error))
+    )
   }, [])
 
   console.log("list :: ", list);
