@@ -1,33 +1,59 @@
-const { kakao } = window;
+import React, { useEffect, useState } from 'react';
+import Mark from '../../Images/mark.png';
+ 
+const Map = ({id}) => {
+  const { naver } = window;
+  const [list, setList] = useState({ nodeDto: { latitude: 36.139, longitude: 128.396 } });
 
-function Map() {
-  const container = document.getElementById('myMap');
-  const options = {
-    center: new kakao.maps.LatLng(36.1425, 128.3945),
-    level: 3
-  };
+  useEffect(()=> {
+    // if (list.nodeDto.latitude == undefined) {
+      const requestOptions = {
+        method: 'GET',
+        redirect: 'follow'
+      };
+    
+      fetch(`http://119.56.230.204:506/api/nodes/arrive-info?id=${id}`, requestOptions)
+      .then(response => response.json())
+      .then(result => setList(result))
+      .catch(error => console.log('error :: ', error))
+    // }  
+  }, [])
 
-  // 지도를 생성합니다
-  const map = new kakao.maps.Map(container, options);
-  
-  // var imageSrc = "../../Images/white.png"; // 마커이미지의 주소입니다    
-  // var imageSize = new kakao.maps.Size(64, 69); // 마커이미지의 크기입니다
-  // var imageOption = {offset: new kakao.maps.Point(27, 69)}; // 마커이미지의 옵션입니다. 마커의 좌표와 일치시킬 이미지 안에서의 좌표를 설정합니다.
-        
-  // 마커의 이미지정보를 가지고 있는 마커이미지를 생성합니다
-  // var markerImage = new kakao.maps.MarkerImage(imageSrc, imageSize, imageOption)
+  useEffect(() => {
+    const location = new naver.maps.LatLng(list.nodeDto.latitude, list.nodeDto.longitude); // 지도에 표시할 위치의 위도와 경도 설정
+    const map = new naver.maps.Map('map', {
+      center: location, 
+      zoom: 18, 
+    });
 
-  // 마커가 표시될 위치입니다
-  var markerPosition  = new kakao.maps.LatLng(36.14256247287736, 128.39459855613836); 
+    const marker = new naver.maps.Marker({
+      map,
+      position: location,
+      icon: {
+        url: Mark,
+        origin: new naver.maps.Point(0, 0),
+        anchor: new naver.maps.Point(25, 26)
+      }
+    })
 
-  // 마커를 생성합니다
-  var marker = new kakao.maps.Marker({
-    position: markerPosition, 
-    // image: markerImage // 마커이미지 설정 
+    var infowindow = new naver.maps.InfoWindow({
+      content: [`<p style="position: relative; top: 60px; left: -10px; color: #53B332; font-size: 12px; text-align:center; background-color: white; font-weight: 900; padding: 5px 10px; border-radius: 5px; border: 3px solid #53B332"> ${list.nodeDto.name} </p>`].join(''),
+      borderWidth: 0,
+      backgroundColor: "transparent",
+      disableAnchor: true
+    });
+
+    infowindow.open(map, marker);
   });
+  
+  // console.log(list);
+  // console.log(id);
 
-  // 마커가 지도 위에 표시되도록 설정합니다
-  marker.setMap(map);
-}
-
+  return (
+    <div>
+      <div id="map" style={{ width:'100%', height:'70vh' }}></div>
+    </div>
+  );
+};
+ 
 export default Map;
