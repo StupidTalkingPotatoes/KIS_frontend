@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
+import { Link, useLocation } from "react-router-dom";
 import styled from 'styled-components';
 import Header from '../Home/Header.js';
-import Modal from './Modal.js';
 import Map from "./Map.js";
 import bus from '../../Images/bus.png';
 
@@ -9,33 +9,25 @@ function Location() {
   const [value, setValue] = useState("");
   const [list, setList] = useState([]);
 
-  const saveValue = (event) => {
-    setValue(event.target.value);
-  }
-
-  const onSearch = () => {
-    <Modal value={value} />
-    window.location.href = "/locationmodal"
-  }
-
+  const location = useLocation(); 
+  const routeId = location.state?.routeId; 
+  const saveValue = (e) => { setValue(e.target.value); }
+  
   useEffect(() => {
-    Map();
-  }, []);
-
-  useEffect(()=> {
     const requestOptions = {
       method: 'GET',
       redirect: 'follow'
     };
-  
-    fetch("https://2a9908a5-f393-436e-86ea-49797d7a1d1f.mock.pstmn.io/api/routes/location?id=", requestOptions)
+    
+    fetch(`http://119.56.230.204:506/api/routes/location?routeId=${routeId}`, requestOptions)
     .then(response => response.json())
     .then(result => setList(result))
-    .catch(error => console.log('error :: ', error))  
+    .catch(error => console.log('error :: ', error))
   }, [])
 
-  console.log(list);
-
+  // console.log(list);
+  // console.log(routeId);
+  
   return (
     <>
       <Header />
@@ -47,32 +39,44 @@ function Location() {
             value={value}
             onChange={saveValue}
           />
-          <span class="material-symbols-outlined"
-            style={{ position: "absolute", right: "40px", top: "20px",
-              fontWeight: "600", color: "#53B332", cursor: "pointer"
-            }}
-            onClick={onSearch}
-          >search</span>
+          <Link to={`/location/${value}`}>
+            <span class="material-symbols-outlined"
+              style={{ position: "absolute", right: "40px", top: "20px",
+                fontWeight: "600", color: "#53B332", cursor: "pointer" }}
+            >search</span>
+          </Link>
         </Search>
-        <Flex>
-          <Mymap id='myMap'></Mymap>
-          <Div>
-            <Bus>
-              <Flex>
-                <Img src={bus} />
-                <H3>{list.routeNo}번</H3>
-                <P>구미역 방면</P>
-              </Flex>
-            </Bus>
-            <Node>
-              <Current>●</Current>
-              <Line></Line>
-              {list.passingNodeList && list.passingNodeList.map((item) =>
-                <NodeItem>{item.name}</NodeItem>
-              )}
-            </Node>
-          </Div>
-        </Flex>
+        {routeId !== undefined && 
+          <Flex>
+            <Mymap>
+              <Map routeId={routeId}/>
+            </Mymap>
+            <Div>
+              <Bus>
+                <Flex>
+                  <Img src={bus} />
+                  {list &&
+                    <H3>{list.routeNo}번</H3>
+                  }
+                  <P>구미역 방면</P>
+                </Flex>
+              </Bus>
+              <NodeList>
+                {list.passingNodeList && list.passingNodeList.map((item, index) =>
+                  <Node>
+                    {list.realtimeNodeOrderList && list.realtimeNodeOrderList.map((it) =>
+                        item.order == it?
+                        (<Current>●</Current>) : (<Current></Current>)
+                      )
+                    }
+                    <Line></Line> 
+                    <NodeItem>{item.name}</NodeItem>
+                  </Node>
+                )}
+              </NodeList>
+            </Div>
+          </Flex>
+        }
       </Container>
     </>
   )
@@ -143,7 +147,7 @@ const Div = styled.div`
   height: 72.8vh;
 `
 
-const Node = styled.div`
+const NodeList = styled.div`
   &::-webkit-scrollbar {
     display: none;
   }
@@ -151,6 +155,10 @@ const Node = styled.div`
   position: relative;
   height: 65.3vh;
   overflow: scroll;
+`
+
+const Node = styled(NodeList)`
+  height: 105px;
 `
 
 const NodeItem = styled.p`
@@ -175,7 +183,7 @@ const Current = styled.h2`
 const Line = styled.div`
   position: absolute;
   border-left : 3px solid #547346;
-  height : 575%;
+  height : 100%;
   top: 0px;
   left: 45px;
   margin: 0px;

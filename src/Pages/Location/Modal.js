@@ -1,45 +1,56 @@
 import React, { useState, useEffect } from 'react';
+import { useParams, Link } from "react-router-dom";
 import styled from 'styled-components';
 import Header from '../Home/Header.js';
 
 function Modal() {
+  const { routeNo } = useParams();
   const [list, setList] = useState([]);
-  const onCancel = () => {
-    window.location.href = "/arrival"
-  }
+  const [routeId, setRouteId] = useState("");
 
-  useEffect(()=> {
+  const onSelect = (routeId) => { setRouteId(routeId); }
+
+  useEffect(() => {
     const requestOptions = {
       method: 'GET',
       redirect: 'follow'
     };
   
-    fetch("https://2a9908a5-f393-436e-86ea-49797d7a1d1f.mock.pstmn.io/api/routes/search?no=195", requestOptions)
+    fetch(`http://119.56.230.204:506/api/routes/search?routeNo=${routeNo}`, requestOptions)
     .then(response => response.json())
     .then(result => setList(result))
     .catch(error => console.log('error :: ', error))  
   }, [])
 
-  console.log(list);
+  // console.log(list);
 
   return (
     <Div>
       <Header />
         <Container>
           <H2>
-            "{list.routeNo}" 의 검색 결과
+            "{routeNo}" 의 검색 결과
           </H2>
           <Fieldset>
-            {list.routeList && list.routeList.map((item) => 
+            {list && list.map((item) => 
               <Label>
-                <Input type="radio" name="option"/>
-                <span>{list.routeNo}ㅤ{item.startNode} → {item.endNode}</span>
+                <Input type="radio" name="option" onClick={() => onSelect(item.routeId)}/>
+                <span>{item.routeNo}</span>
+                <P>{item.startNode} → {item.endNode}</P>
               </Label>
             )}
           </Fieldset>
           <Flex>
-            <Btn $primary>확인</Btn>
-            <Btn onClick={onCancel}>취소</Btn>
+            <Link to="/location" state={{ routeId: routeId }} style={{ margin: "auto" }}>
+              <Btn $primary>
+                확인
+              </Btn>
+            </Link>
+            <Link to="/location" style={{ margin: "auto" }}>
+              <Btn>
+                취소
+              </Btn>
+            </Link>
           </Flex>
         </Container>
     </Div>
@@ -53,7 +64,7 @@ const Div = styled.div`
 `
 
 const Container = styled.div`
-  width: 450px;
+  width: 530px;
   border-radius: 25px;
   color: #547346;
   margin: auto;
@@ -67,7 +78,7 @@ const Fieldset = styled.fieldset`
   }
 
   border: 0px;  
-  height: 315px;
+  height: 370px;
   overflow: scroll;
 `
 
@@ -76,14 +87,14 @@ const Label = styled.label`
   color: #53B332;
   font-size: 20px;
   font-weight: 600;
-  margin: 25px 10px;
-  padding: 25px 20px;
+  margin: 20px 10px;
+  padding: 20px;
   border-radius: 10px;
   background-color: #e1f8d44a;
 `
 
 const Btn = styled.button`
-  color: ${prop => prop.$primary? "white" : "#53B332"};;
+  color: ${prop => prop.$primary? "white" : "#53B332"};
   background-color: ${prop => prop.$primary ? "#53B332" : "white"};
   
   width: 170px;
@@ -115,6 +126,10 @@ const Input = styled.input.attrs({ type: 'radio' })`
   margin-top: 3px;
   margin-right: 10px;
   border: 2px solid #547346;
+`
+
+const P = styled.p`
+  margin: 10px 0px 0px 33px;
 `
 
 const H2 = styled.h2`
