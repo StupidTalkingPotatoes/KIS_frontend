@@ -4,11 +4,8 @@ import Map from "./Map";
 import Header from "../Home/Header";
 
 function Path() {
+  const { kakao } = window; 
   const [list, setList] = useState([]);
-
-  useEffect(() => {
-    Map();
-  }, []);
 
   useEffect(()=> {
     const requestOptions = {
@@ -22,79 +19,73 @@ function Path() {
     .catch(error => console.log('error :: ', error))  
   }, [])
 
-  console.log(list);
+  // console.log(list);
 
   return (
     <>
       <Header />
       <Container>
         <Flex>
-          <Mymap id='myMap'></Mymap>
+          {list && 
+            <Mymap>
+              <Map />
+            </Mymap>
+          }
           <Div>
             <Search>
               <Input type="text" placeholder="출발지를 입력하세요." />
               <span class="material-symbols-outlined"
-                style={{
-                  position: "absolute",
-                  right: "0px",
-                  top: "35px",
-                  fontWeight: "600",
-                  color: "#53B332",
-                  cursor: "pointer"
-                }}
-                >search</span>
+                style={{ position: "absolute", right: "10px", top: "35px", fontWeight: "600", color: "#53B332", cursor: "pointer" }}
+              >search</span>
               <Input type="text" placeholder="도착지를 입력하세요." />
               <span class="material-symbols-outlined"
-                style={{
-                  position: "absolute",
-                  right: "0px",
-                  top: "100px",
-                  fontWeight: "600",
-                  color: "#53B332",
-                  cursor: "pointer"
-                }}
-                >search</span>
+                style={{ position: "absolute", right: "10px", top: "100px", fontWeight: "600", color: "#53B332", cursor: "pointer" }}              
+              >search</span>
             </Search>
-            <Select>
-              <option value="최소 시간순">최소 시간순</option>
-              <option value="최적 경로순">최적 경로순</option>
-            </Select>
             <PathList>
-              {list && list.map((items) => 
-                <PathContent>
-                  <H3>{items.duration}분</H3>
-                  {items.stepList.map((item) =>
-                    <Content>
-                      <Flex>
-                        <H4>{item.type}</H4>
-                        <P>({item.duration}분)</P>
-                        {/* 버스 하나를 몇 분동안 타는 지 */}
-                      </Flex>
-                      <Flex>
-                        <H4>승차</H4>
-                        <P>{item.departure}</P>
-                      </Flex>
-                      {item.arrivalRouteList.map((it) => 
-                        <>
+              {list && list.length > 0 ? (
+                list.map((items) => (
+                  <PathContent key={items.id}>
+                    <H3>{items.duration}분</H3>
+                    {items.stepList.map((item) =>
+                      item.arrival != null ? (
+                        <Content key={item.id}>
                           <Flex>
-                            <H4>{it.routeNo}</H4>
-                            <P $direction>{it.departureName}</P>
+                            <Type>버스</Type>
+                            <P>({item.duration}분)</P>
                           </Flex>
-                          <Time>
-                            {it.arrTime}분
-                          </Time>
-                        </>
-                      )}
-                      <Flex>
-                        <H4>하차</H4>
-                        <P>{item.arrival}</P> 
-                        {/* 하차 지점 */}
-                      </Flex>
-                    </Content>
-                  )}
-                </PathContent>
+                          <Flex>
+                            <H4>승차</H4>
+                            <P>{item.departure.name}</P>
+                          </Flex>
+                          {item.arrivalRouteList != null && item.arrivalRouteList.length > 0 ? (
+                            item.arrivalRouteList.map((it) => (
+                              <Flex key={it.routeNo}>
+                                <H4 $bus>{it.routeNo}</H4>
+                                <Time>{it.arrTime}분</Time>
+                              </Flex>
+                            ))
+                          ) : null}
+                          <Flex>
+                            <H4>하차</H4>
+                            <P>{item.arrival.name}</P>
+                          </Flex>
+                        </Content>
+                      ) : (
+                        <Content $walking key={item.id}>
+                          <Flex>
+                            <Type $walking>도보</Type>
+                            <P $walking>({item.duration}분)</P>
+                          </Flex>
+                        </Content>
+                      )
+                    )}
+                  </PathContent>
+                ))
+              ) : (
+                <H4 $no>현재 갈 수 있는 경로가 없습니다.</H4>
               )}
-            </PathList> 
+            </PathList>
           </Div>
         </Flex>
       </Container>
@@ -107,21 +98,10 @@ const Container = styled.div`
   color: #547346;
 `
 
-const Select = styled.select`
-  outline: none;
-  color: #547346;
-  font-size: 16px;
-  font-weight: 600;
-  float: right;
-  margin: 5px 20px 15px 0px;
-  padding: 5px 10px;
-  border: 0px;
-`
-
 const Search = styled.div`
   position: relative;
-  width: 70%;
-  margin: 35px 20px 5px 20px;
+  width: 80%;
+  margin: 35px 20px 5px 14px;
   padding: 10px;
   text-align: center;
   align-items: center;
@@ -159,7 +139,7 @@ const PathContent = styled.div`
 `
 
 const Mymap = styled.div`
-  width: 90%;
+  width: 85%;
   height: 80vh;
   margin-top: 28px;
 `
@@ -168,7 +148,7 @@ const Content = styled.div`
   padding: 10px;
   margin: 10px 20px;
   border-radius: 15px;
-  background-color: #52b33236;
+  background-color: ${props => props.$walking ? "#d3d3d360" : "#52b33236"};
 `
 
 const H3 = styled.h3`
@@ -178,21 +158,31 @@ const H3 = styled.h3`
   display: block;
 `
 
+const Type = styled.h4`
+  margin: ${props => props.$walking ? "5px 10px" : "5px 10px 10px 10px"};
+  font-size: 21px;
+  display: block;
+  color: ${props => props.$walking ? "#808080" : ""};
+`
+
 const H4 = styled.h4`
-  margin: 5px 10px;
+  width: ${props => props.$bus ? "20px" : ""};
+  margin: 5px;
+  margin-left: ${props => props.$bus ? "62px" : "12px"};
   font-size: 18px;
   display: block;
+  text-align: ${props => props.$no ? "center" : ""};
 `
 
 const P = styled.p`
-  padding: 0px;
+  color: ${props => props.$walking ? "#6a6a6a" : ""};
   margin: 5px 10px;
 `
 
 const Time = styled(P)`
   color: red;
   font-weight: 700;
-  margin-left: 65px;
+  margin: 6.5px 10px 3.5px;
 `
 
 const Flex = styled.div`
