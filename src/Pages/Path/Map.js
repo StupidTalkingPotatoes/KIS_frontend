@@ -1,33 +1,167 @@
-const { kakao } = window;
-
-function Map() {
-  const container = document.getElementById('myMap');
-  const options = {
-    center: new kakao.maps.LatLng(36.1425, 128.3945),
-    level: 7
-  };
-
-  // 지도를 생성합니다
-  const map = new kakao.maps.Map(container, options);
-  
-  // var imageSrc = "../../Images/white.png"; // 마커이미지의 주소입니다    
-  // var imageSize = new kakao.maps.Size(64, 69); // 마커이미지의 크기입니다
-  // var imageOption = {offset: new kakao.maps.Point(27, 69)}; // 마커이미지의 옵션입니다. 마커의 좌표와 일치시킬 이미지 안에서의 좌표를 설정합니다.
-        
-  // 마커의 이미지정보를 가지고 있는 마커이미지를 생성합니다
-  // var markerImage = new kakao.maps.MarkerImage(imageSrc, imageSize, imageOption)
-
-  // 마커가 표시될 위치입니다
-  var markerPosition  = new kakao.maps.LatLng(36.14256247287736, 128.39459855613836); 
-
-  // 마커를 생성합니다
-  var marker = new kakao.maps.Marker({
-    position: markerPosition, 
-    // image: markerImage // 마커이미지 설정 
+import React, { useEffect, useState } from 'react';
+import BusMark from '../../Images/mark.png';
+import Current from '../../Images/current.png';
+import BigBusMark from '../../Images/bigmark.png';
+import BigWalkingMark from '../../Images/bigmark_grey.png';
+ 
+function getCurrentPosition() {
+  return new Promise(function (resolve, reject) {
+    navigator.geolocation.getCurrentPosition(resolve, reject)
   });
-
-  // 마커가 지도 위에 표시되도록 설정합니다
-  marker.setMap(map);
 }
 
+const Map = ({ departureLatitude, departureLongitude, destinationLatitude, destinationLongitude }) => {
+  const { naver } = window;
+  const [list, setList] = useState(null);
+  const [point, setPoint] = useState({ coords: { latitude: 36.14567, longitude: 128.39261 } });
+
+  useEffect(() => {
+    getCurrentPosition()
+    .then(point => setPoint(point))
+  }, [])
+
+  useEffect(()=> {
+    const requestOptions = {
+      method: 'GET',
+      redirect: 'follow'
+    };
+    
+    fetch(`http://119.56.230.204:506/paths?departureLongitude=${departureLongitude}&departureLatitude=${departureLatitude}&arrivalLongitude=${destinationLongitude}&arrivalLatitude=${destinationLatitude}`, requestOptions)
+    .then(response => response.json())
+    .then(result => setList(result))
+    .catch(error => console.log('error :: ', error))  
+  }, [destinationLongitude])
+
+  useEffect(() => {
+    const current = new naver.maps.LatLng(point.coords.latitude, point.coords.longitude); 
+
+    const map = new naver.maps.Map('map', {
+      center: current,
+      zoom: 13,
+    });
+
+    const currentMarker = new naver.maps.Marker({
+      map,
+      position: current,
+      icon: {
+        url: Current,
+        origin: new naver.maps.Point(0, 0),
+        anchor: new naver.maps.Point(25, 26)
+      }
+    })
+
+    // eslint-disable-next-line no-lone-blocks
+    {list && list[0]?.stepList?.map((items, index) => {
+      
+      // 출발지에서 걸어가야 할 때 
+      if (items.type == "WALKING" && index == 0) {
+        const walkingMarker = new naver.maps.Marker({
+          map,
+          position: new naver.maps.LatLng(departureLatitude, departureLongitude),
+          icon: {
+            url: BigWalkingMark,
+            origin: new naver.maps.Point(0, 0),
+            anchor: new naver.maps.Point(25, 26)
+          }
+        })
+
+        var infowindow = new naver.maps.InfoWindow({
+          content: [`<p style="position: relative; top: 95px; left: -8px; color: #808080; font-size: 12px; text-align:center; background-color: white; font-weight: 900; padding: 5px 10px; border-radius: 5px; border: 3px solid #808080;"> 출발 </p>`].join(''),
+          borderWidth: 0,
+          backgroundColor: "transparent",
+          disableAnchor: true
+        });
+
+        naver.maps.Event.addListener(walkingMarker, "click", function(e) {
+          if (infowindow.getMap()) { infowindow.close(); }
+          else { infowindow.open(map, walkingMarker); }
+        });
+      }
+    
+      // 도착지까지 걸어가야 할 때 
+      if (items.type == "WALKING" && index == list[0].stepList.length - 1) {
+        const walkingMarker = new naver.maps.Marker({
+          map,
+          position: new naver.maps.LatLng(destinationLatitude, destinationLongitude),
+          icon: {
+            url: BigWalkingMark,
+            origin: new naver.maps.Point(0, 0),
+            anchor: new naver.maps.Point(25, 26)
+          }
+        })
+
+        var infowindow = new naver.maps.InfoWindow({
+          content: [`<p style="position: relative; top: 95px; left: -8px; color: #808080; font-size: 12px; text-align:center; background-color: white; font-weight: 900; padding: 5px 10px; border-radius: 5px; border: 3px solid #808080;"> 도착 </p>`].join(''),
+          borderWidth: 0,
+          backgroundColor: "transparent",
+          disableAnchor: true
+        });
+
+        naver.maps.Event.addListener(walkingMarker, "click", function(e) {
+          if (infowindow.getMap()) { infowindow.close(); }
+          else { infowindow.open(map, walkingMarker); }
+        });
+      }
+
+      // 출발지에서 버스탈 때 
+      if (items.type == "BUS" && index == 0) {
+        const BigbusMarker = new naver.maps.Marker({
+          map,
+          position: new naver.maps.LatLng(departureLatitude, departureLongitude),
+          icon: {
+            url: BigBusMark,
+            origin: new naver.maps.Point(0, 0),
+            anchor: new naver.maps.Point(25, 26)
+          }
+        })
+
+        var infowindow = new naver.maps.InfoWindow({
+          content: [`<p style="position: relative; top: 95px; left: -8px; color: #53B332; font-size: 12px; text-align:center; background-color: white; font-weight: 900; padding: 5px 10px; border-radius: 5px; border: 3px solid #53B332"> 출발 </p>`].join(''),
+          borderWidth: 0,
+          backgroundColor: "transparent",
+          disableAnchor: true
+        });
+
+        naver.maps.Event.addListener(BigbusMarker, "click", function(e) {
+          if (infowindow.getMap()) { infowindow.close(); }
+          else { infowindow.open(map, BigbusMarker); }
+        });
+      }
+    
+      // 도착지까지 버스탈 때 
+      if (items.type == "BUS" && index == list[0].stepList.length - 1) {
+        const BigbusMarker = new naver.maps.Marker({
+          map,
+          position: new naver.maps.LatLng(destinationLatitude, destinationLongitude),
+          icon: {
+            url: BigBusMark,
+            origin: new naver.maps.Point(0, 0),
+            anchor: new naver.maps.Point(25, 26)
+          }
+        })
+
+        var infowindow = new naver.maps.InfoWindow({
+          content: [`<p style="position: relative; top: 95px; left: -8px; color: #53B332; font-size: 12px; text-align:center; background-color: white; font-weight: 900; padding: 5px 10px; border-radius: 5px; border: 3px solid #53B332"> 도착 </p>`].join(''),
+          borderWidth: 0,
+          backgroundColor: "transparent",
+          disableAnchor: true
+        });
+
+        naver.maps.Event.addListener(BigbusMarker, "click", function(e) {
+          if (infowindow.getMap()) { infowindow.close(); }
+          else { infowindow.open(map, BigbusMarker); }
+        });
+      }
+    })}
+  });
+  
+  // console.log(list);
+
+  return (
+    <div>
+      <div id="map" style={{ width:'100%', height:'80vh' }}></div>
+    </div>
+  );
+};
+ 
 export default Map;
