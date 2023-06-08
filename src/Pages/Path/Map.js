@@ -152,6 +152,53 @@ const Map = ({ departureLatitude, departureLongitude, destinationLatitude, desti
           else { infowindow.open(map, BigbusMarker); }
         });
       }
+
+      if (items.type == "BUS" && index > 0 || items.type == "BUS" && index < list[0].stepList.length - 1) {
+        
+        const departureMarker = new naver.maps.Marker({
+          map,
+          position: new naver.maps.LatLng(items.departure.latitude, items.departure.longitude),
+          icon: {
+            url: BusMark,
+            origin: new naver.maps.Point(0, 0),
+            anchor: new naver.maps.Point(25, 26)
+          }
+        })
+
+        var infowindow = new naver.maps.InfoWindow({
+          content: [`<p style="position: relative; top: 95px; left: -8px; color: #53B332; font-size: 12px; text-align:center; background-color: white; font-weight: 900; padding: 5px 10px; border-radius: 5px; border: 3px solid #53B332"> ${items.departure.name} </p>`].join(''),
+          borderWidth: 0,
+          backgroundColor: "transparent",
+          disableAnchor: true
+        });
+
+        naver.maps.Event.addListener(departureMarker, "click", function (e) {
+          if (infowindow.getMap()) { infowindow.close(); }
+          else { infowindow.open(map, departureMarker); }
+        });
+        
+        const arrivalMarker = new naver.maps.Marker({
+          map,
+          position: new naver.maps.LatLng(items.arrival.latitude, items.arrival.longitude),
+          icon: {
+            url: BusMark,
+            origin: new naver.maps.Point(0, 0),
+            anchor: new naver.maps.Point(25, 26)
+          }
+        })
+
+        var infowindow = new naver.maps.InfoWindow({
+          content: [`<p style="position: relative; top: 95px; left: -8px; color: #53B332; font-size: 12px; text-align:center; background-color: white; font-weight: 900; padding: 5px 10px; border-radius: 5px; border: 3px solid #53B332"> ${items.arrival.name} </p>`].join(''),
+          borderWidth: 0,
+          backgroundColor: "transparent",
+          disableAnchor: true
+        });
+
+        naver.maps.Event.addListener(arrivalMarker, "click", function (e) {
+          if (infowindow.getMap()) { infowindow.close(); }
+          else { infowindow.open(map, arrivalMarker); }
+        });
+      }
     })}
   });
   
