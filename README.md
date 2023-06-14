@@ -22,7 +22,12 @@
 
 <br/>
 
-## 4. 화면
+## 4. 배포 링크
+ - https://stupidtalkingpotatoes.github.io/KIS_frontend/
+
+<br/>
+
+## 5. 화면
 ### 주변 정류장 조회
 ![main](https://github.com/StupidTalkingPotatoes/KIS_documents/blob/main/%EA%B5%AC%ED%98%84%20%EA%B2%B0%EA%B3%BC%20%EC%82%AC%EC%A7%84/1-%EB%A9%94%EC%9D%B8%ED%99%94%EB%A9%B4.png)
 
